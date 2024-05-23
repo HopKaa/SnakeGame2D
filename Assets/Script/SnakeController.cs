@@ -13,7 +13,6 @@ public class SnakeController : MonoBehaviour
     private float nextMoveTime;
     private List<GameObject> snakeParts = new List<GameObject>();
     private Vector2 direction = Vector2.right;
-    private Vector2 previousDirection = Vector2.right;
     private bool growSnakeNextMove = false;
 
     void Start()
@@ -32,11 +31,7 @@ public class SnakeController : MonoBehaviour
 
     void Update()
     {
-        if (Time.time >= nextMoveTime)
-        {
-            Move();
-            nextMoveTime = Time.time + (moveInterval / speedMultiplier);
-        }
+        Vector2 previousDirection = direction;
 
         if (Input.GetKeyDown(KeyCode.W) && previousDirection != Vector2.down)
         {
@@ -54,29 +49,33 @@ public class SnakeController : MonoBehaviour
         {
             direction = Vector2.right;
         }
+
+        if (Time.time >= nextMoveTime)
+        {
+            Move();
+            nextMoveTime = Time.time + (moveInterval / speedMultiplier);
+        }
     }
 
     void Move()
     {
-        Vector2 newPosition = (Vector2)snakeParts[0].transform.position + direction;
+        Vector2 newPosition = (Vector2)snakeParts[0].transform.localPosition + direction;
 
-        GameObject newHead = Instantiate(headPrefab, newPosition, Quaternion.identity, gameField);
-        snakeParts.Insert(0, newHead);
+        snakeParts[0].transform.localPosition = newPosition;
+
+        for (int i = snakeParts.Count - 1; i > 0; i--)
+        {
+            snakeParts[i].transform.localPosition = snakeParts[i - 1].transform.localPosition;
+        }
 
         if (growSnakeNextMove)
         {
             growSnakeNextMove = false;
-        }
-        else
-        {
-            GameObject tail = snakeParts[snakeParts.Count - 1];
-            snakeParts.RemoveAt(snakeParts.Count - 1);
-            Destroy(tail);
+            GameObject newBodyPart = Instantiate(bodyPrefab, snakeParts[snakeParts.Count - 1].transform.localPosition, Quaternion.identity, snakeParts[snakeParts.Count - 1].transform);
+            snakeParts.Add(newBodyPart);
         }
 
-        previousDirection = direction;
-
-        CheckCollisionWithApple(newHead.GetComponent<Collider2D>());
+        CheckCollisionWithApple(snakeParts[0].GetComponent<Collider2D>());
     }
 
     void CheckCollisionWithApple(Collider2D headCollider)
