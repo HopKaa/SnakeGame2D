@@ -8,28 +8,26 @@ public class SnakeController : MonoBehaviour
     [SerializeField] private Transform gameField;
     [SerializeField] private float moveInterval = 0.5f;
     [SerializeField] private float speedMultiplier = 1.0f;
-    [SerializeField] private AppleManager appleManager; // Ссылка на компонент AppleManager
+    [SerializeField] private AppleManager appleManager;
+
     private float nextMoveTime;
     private List<GameObject> snakeParts = new List<GameObject>();
     private Vector2 direction = Vector2.right;
     private Vector2 previousDirection = Vector2.right;
+    private bool growSnakeNextMove = false;
 
     void Start()
     {
-        // Получаем размеры игрового поля
         RectTransform gameFieldRectTransform = gameField.GetComponent<RectTransform>();
         float gameFieldWidth = gameFieldRectTransform.rect.width;
         float gameFieldHeight = gameFieldRectTransform.rect.height;
 
-        // Рассчитываем координаты спавна головы змеи в центре игрового поля
         Vector3 spawnPosition = new Vector3(gameFieldWidth / 2, gameFieldHeight / 2, 0f);
 
-        // Спавним голову змеи в центре игрового поля
         GameObject head = Instantiate(headPrefab, spawnPosition, Quaternion.identity, gameField);
         snakeParts.Add(head);
 
-        // Устанавливаем время следующего перемещения
-        nextMoveTime = Time.time + (moveInterval / speedMultiplier); // Учитываем множитель скорости
+        nextMoveTime = Time.time + (moveInterval / speedMultiplier);
     }
 
     void Update()
@@ -40,7 +38,6 @@ public class SnakeController : MonoBehaviour
             nextMoveTime = Time.time + (moveInterval / speedMultiplier);
         }
 
-        // Обработка ввода игрока для изменения направления змеи
         if (Input.GetKeyDown(KeyCode.W) && previousDirection != Vector2.down)
         {
             direction = Vector2.up;
@@ -58,43 +55,54 @@ public class SnakeController : MonoBehaviour
             direction = Vector2.right;
         }
     }
+
     void Move()
     {
-        // Получаем новую позицию головы змеи на основе текущего направления
         Vector2 newPosition = (Vector2)snakeParts[0].transform.position + direction;
 
-        // Создаем новую голову змеи
         GameObject newHead = Instantiate(headPrefab, newPosition, Quaternion.identity, gameField);
         snakeParts.Insert(0, newHead);
 
-        // Уничтожаем последнюю часть тела змеи, чтобы она двигалась
-        if (snakeParts.Count > 1)
+        if (growSnakeNextMove)
+        {
+            growSnakeNextMove = false;
+        }
+        else
         {
             GameObject tail = snakeParts[snakeParts.Count - 1];
             snakeParts.RemoveAt(snakeParts.Count - 1);
             Destroy(tail);
         }
+
         previousDirection = direction;
+
+        CheckCollisionWithApple(newHead.GetComponent<Collider2D>());
     }
-    void OnTriggerEnter2D(Collider2D other)
+
+    void CheckCollisionWithApple(Collider2D headCollider)
     {
-        if (other.gameObject.GetComponent<Apple>() != null)
+        if (headCollider != null && appleManager != null)
         {
-            HandleAppleCollision(other.gameObject);
+            Collider2D[] colliders = Physics2D.OverlapBoxAll(headCollider.bounds.center, headCollider.bounds.size, 0f);
+            foreach (var collider in colliders)
+            {
+                if (collider.gameObject.GetComponent<Apple>() != null)
+                {
+                    HandleAppleCollision(collider.gameObject);
+                }
+            }
         }
     }
+
     void HandleAppleCollision(GameObject apple)
     {
-        // Уничтожаем яблоко
         Destroy(apple);
-
-        // Увеличиваем змейку
+        appleManager.SpawnApple();
         GrowSnake();
     }
+
     void GrowSnake()
     {
-        // Создаем новую часть тела змеи
-        GameObject newBodyPart = Instantiate(bodyPrefab, snakeParts[snakeParts.Count - 1].transform.position, Quaternion.identity, gameField);
-        snakeParts.Add(newBodyPart);
+        growSnakeNextMove = true;
     }
 }

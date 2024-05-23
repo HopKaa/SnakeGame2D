@@ -1,31 +1,51 @@
 using UnityEngine;
 using UnityEngine.UI;
-using System.Collections;
 
 public class Apple : MonoBehaviour
 {
+    private CanvasRenderer canvasRenderer;
+    private Image image;
     private float blinkTime;
+    private float blinkInterval = 0.1f;
     private bool isBlinking = false;
+    private float blinkTimer = 0f;
+
+    void Start()
+    {
+        canvasRenderer = GetComponent<CanvasRenderer>();
+        image = GetComponent<Image>();
+        if (canvasRenderer == null)
+        {
+            Debug.LogError("Missing CanvasRenderer component on Apple");
+        }
+        if (image == null)
+        {
+            Debug.LogError("Missing Image component on Apple");
+        }
+    }
+
+    void Update()
+    {
+        if (isBlinking)
+        {
+            blinkTimer += Time.deltaTime;
+            if (blinkTimer >= blinkInterval)
+            {
+                canvasRenderer.SetAlpha(canvasRenderer.GetAlpha() == 1f ? 0f : 1f);
+                blinkTimer = 0f;
+            }
+        }
+    }
 
     public void StartBlinking(float time)
     {
         blinkTime = time;
         isBlinking = true;
-        StartCoroutine(Blink());
+        Invoke("DestroyApple", blinkTime);
     }
 
-    private IEnumerator Blink()
+    private void DestroyApple()
     {
-        Image appleImage = GetComponent<Image>();
-        while (isBlinking)
-        {
-            appleImage.enabled = !appleImage.enabled;
-            yield return new WaitForSeconds(0.2f);
-        }
-    }
-
-    void OnDestroy()
-    {
-        isBlinking = false;
+        Destroy(gameObject);
     }
 }

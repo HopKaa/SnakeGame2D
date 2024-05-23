@@ -149,7 +149,8 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1795078081}
   m_Father: {fileID: 1508508898}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -207,11 +208,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 32977f2e9a00fa847be97269e255ca1a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  applePrefab: {fileID: 5528496204547474967, guid: bee3b0fa16ecdf840b786297535a4003, type: 3}
+  applePrefab: {fileID: 7996768527030566612, guid: bee3b0fa16ecdf840b786297535a4003, type: 3}
   gameField: {fileID: 823628063}
-  appleLifetime: 10
-  appleSpawnInterval: 2
-  appleBlinkTime: 2
+  appleBlinkTime: 10
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0
@@ -399,7 +398,6 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 823628063}
-  - {fileID: 1795078081}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -417,6 +415,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1795078081}
   - component: {fileID: 1795078082}
+  - component: {fileID: 1795078083}
   m_Layer: 0
   m_Name: Snake
   m_TagString: Untagged
@@ -436,7 +435,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1508508898}
+  m_Father: {fileID: 823628063}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -461,6 +460,14 @@ MonoBehaviour:
   moveInterval: 0.25
   speedMultiplier: 100
   appleManager: {fileID: 823628066}
+--- !u!222 &1795078083
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1795078080}
+  m_CullTransparentMesh: 1
 --- !u!1 &2104095994
 GameObject:
   m_ObjectHideFlags: 0
