@@ -6,14 +6,16 @@ public class SnakeController : MonoBehaviour
     [SerializeField] private GameObject headPrefab;
     [SerializeField] private GameObject bodyPrefab;
     [SerializeField] private Transform gameField;
-    [SerializeField] private float moveInterval = 0.5f;
-    [SerializeField] private float speedMultiplier = 1.0f;
+    [SerializeField] private float moveInterval = 0.1f;
+    [SerializeField] private float speedMultiplier = 10.0f;
     [SerializeField] private AppleManager appleManager;
+    [SerializeField] private float segmentDistance = 8f;
 
     private float nextMoveTime;
     private List<GameObject> snakeParts = new List<GameObject>();
     private Vector2 direction = Vector2.right;
     private bool growSnakeNextMove = false;
+    private List<Vector2> previousPositions = new List<Vector2>();
 
     void Start()
     {
@@ -59,19 +61,30 @@ public class SnakeController : MonoBehaviour
 
     void Move()
     {
-        Vector2 newPosition = (Vector2)snakeParts[0].transform.localPosition + direction;
+        Vector2 newPosition = (Vector2)snakeParts[0].transform.localPosition + direction * segmentDistance; // Используем переменную segmentDistance
 
+        previousPositions.Insert(0, snakeParts[0].transform.localPosition);
         snakeParts[0].transform.localPosition = newPosition;
 
-        for (int i = snakeParts.Count - 1; i > 0; i--)
+        for (int i = 1; i < snakeParts.Count; i++)
         {
-            snakeParts[i].transform.localPosition = snakeParts[i - 1].transform.localPosition;
+            if (previousPositions.Count >= i * segmentDistance)
+            {
+                snakeParts[i].transform.localPosition = previousPositions[Mathf.RoundToInt(i * segmentDistance)];
+            }
+        }
+
+        // Ограничиваем количество сохраненных позиций головы
+        if (previousPositions.Count > snakeParts.Count * segmentDistance)
+        {
+            previousPositions.RemoveRange(Mathf.RoundToInt(snakeParts.Count * segmentDistance), previousPositions.Count - Mathf.RoundToInt(snakeParts.Count * segmentDistance));
         }
 
         if (growSnakeNextMove)
         {
             growSnakeNextMove = false;
-            GameObject newBodyPart = Instantiate(bodyPrefab, snakeParts[snakeParts.Count - 1].transform.localPosition, Quaternion.identity, snakeParts[snakeParts.Count - 1].transform);
+            Vector2 newPartPosition = snakeParts[snakeParts.Count - 1].transform.localPosition;
+            GameObject newBodyPart = Instantiate(bodyPrefab, newPartPosition, Quaternion.identity, gameField);
             snakeParts.Add(newBodyPart);
         }
 

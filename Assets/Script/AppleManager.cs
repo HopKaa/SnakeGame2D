@@ -4,7 +4,8 @@ public class AppleManager : MonoBehaviour
 {
     [SerializeField] private GameObject applePrefab;
     [SerializeField] private Transform gameField;
-    [SerializeField] private float appleBlinkTime = 5.0f;
+    private float appleLifetime = 15f; // ¬рем€ жизни €блока
+    private float timeSinceLastAppleSpawn;
 
     private GameObject currentApple;
     private float gameFieldWidth;
@@ -17,6 +18,14 @@ public class AppleManager : MonoBehaviour
         gameFieldHeight = gameFieldRectTransform.rect.height;
 
         SpawnApple();
+    }
+
+    void Update()
+    {
+        if (Time.time - timeSinceLastAppleSpawn >= appleLifetime)
+        {
+            SpawnApple();
+        }
     }
 
     public void SpawnApple()
@@ -36,16 +45,11 @@ public class AppleManager : MonoBehaviour
         BoxCollider2D appleCollider = currentApple.GetComponent<BoxCollider2D>();
         if (appleCollider != null)
         {
-            appleCollider.size = new Vector2(20, 20); // ”величиваем размер коллайдера дл€ €блока
+            appleCollider.size = new Vector2(50, 50); // ”величиваем размер коллайдера дл€ €блока
         }
 
-        Apple appleComponent = currentApple.GetComponent<Apple>();
-        if (appleComponent != null)
-        {
-            appleComponent.StartBlinking(appleBlinkTime);
-        }
-
-        // Automatically respawn a new apple after a certain time
-        Invoke("SpawnApple", appleBlinkTime);
+        // ”ничтожаем €блоко после заданного времени
+        Destroy(currentApple, appleLifetime);
+        timeSinceLastAppleSpawn = Time.time;
     }
 }
