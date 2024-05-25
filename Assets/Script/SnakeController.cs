@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class SnakeController : MonoBehaviour
 {
@@ -10,6 +11,7 @@ public class SnakeController : MonoBehaviour
     [SerializeField] private float speedMultiplier = 10.0f;
     [SerializeField] private AppleManager appleManager;
     [SerializeField] private float segmentDistance = 8f;
+    [SerializeField] private GameObject gameOverText;
 
     private float nextMoveTime;
     private List<GameObject> snakeParts = new List<GameObject>();
@@ -89,6 +91,7 @@ public class SnakeController : MonoBehaviour
         }
 
         CheckCollisionWithApple(snakeParts[0].GetComponent<Collider2D>());
+        CheckCollisionWithBarrier(snakeParts[0].GetComponent<Collider2D>());
     }
 
     void CheckCollisionWithApple(Collider2D headCollider)
@@ -106,11 +109,43 @@ public class SnakeController : MonoBehaviour
         }
     }
 
+    void CheckCollisionWithBarrier(Collider2D headCollider)
+    {
+        if (headCollider != null)
+        {
+            Collider2D[] colliders = Physics2D.OverlapBoxAll(headCollider.bounds.center, headCollider.bounds.size, 0f);
+            foreach (var collider in colliders)
+            {
+                if (collider.gameObject.name.Contains("Barrier"))
+                {
+                    HandleGameOver();
+                    break;
+                }
+            }
+        }
+    }
+
     void HandleAppleCollision(GameObject apple)
     {
         Destroy(apple);
         appleManager.SpawnApple();
         GrowSnake();
+    }
+
+    void HandleGameOver()
+    {
+        if (gameOverText != null)
+        {
+            Text gameOverTextField = gameOverText.GetComponentInChildren<Text>();
+            if (gameOverTextField != null)
+            {
+                gameOverTextField.text = "GAME OVER";
+            }
+
+            gameOverText.SetActive(true);
+        }
+
+        Time.timeScale = 0;
     }
 
     void GrowSnake()

@@ -4,12 +4,13 @@ public class AppleManager : MonoBehaviour
 {
     [SerializeField] private GameObject applePrefab;
     [SerializeField] private Transform gameField;
-    private float appleLifetime = 15f; // ¬рем€ жизни €блока
-    private float timeSinceLastAppleSpawn;
 
+    private float appleLifetime = 15f;
     private GameObject currentApple;
     private float gameFieldWidth;
     private float gameFieldHeight;
+    private float barrierThickness = 40f; // “олщина барьеров
+    private float timeSinceLastAppleSpawn;
 
     void Start()
     {
@@ -35,8 +36,7 @@ public class AppleManager : MonoBehaviour
             Destroy(currentApple);
         }
 
-        Vector2 randomPosition = new Vector2(Random.Range(-gameFieldWidth / 2, gameFieldWidth / 2),
-                                             Random.Range(-gameFieldHeight / 2, gameFieldHeight / 2));
+        Vector2 randomPosition = GetRandomPosition();
 
         currentApple = Instantiate(applePrefab, gameField);
         RectTransform appleRectTransform = currentApple.GetComponent<RectTransform>();
@@ -45,11 +45,22 @@ public class AppleManager : MonoBehaviour
         BoxCollider2D appleCollider = currentApple.GetComponent<BoxCollider2D>();
         if (appleCollider != null)
         {
-            appleCollider.size = new Vector2(50, 50); // ”величиваем размер коллайдера дл€ €блока
+            appleCollider.size = new Vector2(50, 50);
         }
 
-        // ”ничтожаем €блоко после заданного времени
-        Destroy(currentApple, appleLifetime);
         timeSinceLastAppleSpawn = Time.time;
+    }
+
+    private Vector2 GetRandomPosition()
+    {
+        float minX = -gameFieldWidth / 2 + barrierThickness;
+        float maxX = gameFieldWidth / 2 - barrierThickness;
+        float minY = -gameFieldHeight / 2 + barrierThickness;
+        float maxY = gameFieldHeight / 2 - barrierThickness;
+
+        float randomX = Random.Range(minX, maxX);
+        float randomY = Random.Range(minY, maxY);
+
+        return new Vector2(randomX, randomY);
     }
 }
