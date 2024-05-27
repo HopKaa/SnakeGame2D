@@ -25,7 +25,7 @@ public class Apple : MonoBehaviour
             spriteRenderer.enabled = !spriteRenderer.enabled;
             yield return new WaitForSeconds(0.5f);
         }
-        spriteRenderer.enabled = true; // ќставл€ем €блоко видимым после мигани€
+        spriteRenderer.enabled = true;
         isBlinking = false;
     }
 }

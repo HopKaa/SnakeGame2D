@@ -11,13 +11,15 @@ public class SnakeController : MonoBehaviour
     [SerializeField] private float speedMultiplier = 10.0f;
     [SerializeField] private AppleManager appleManager;
     [SerializeField] private float segmentDistance = 8f;
-    [SerializeField] private GameObject gameOverText;
+    [SerializeField] private Text gameOverText; // Текст для отображения "GAME OVER"
+    [SerializeField] private Text fruitCounterText; // Текст для отображения счетчика фруктов
 
     private float nextMoveTime;
     private List<GameObject> snakeParts = new List<GameObject>();
     private Vector2 direction = Vector2.right;
     private bool growSnakeNextMove = false;
     private List<Vector2> previousPositions = new List<Vector2>();
+    private int fruitsEaten = 0; // Счетчик съеденных фруктов
 
     void Start()
     {
@@ -31,6 +33,11 @@ public class SnakeController : MonoBehaviour
         snakeParts.Add(head);
 
         nextMoveTime = Time.time + (moveInterval / speedMultiplier);
+
+        // Изначально скрываем текст "GAME OVER"
+        gameOverText.text = "";
+        // Изначально устанавливаем счетчик фруктов
+        UpdateFruitCounter();
     }
 
     void Update()
@@ -91,7 +98,7 @@ public class SnakeController : MonoBehaviour
         }
 
         CheckCollisionWithApple(snakeParts[0].GetComponent<Collider2D>());
-        CheckCollisionWithBarrier(snakeParts[0].GetComponent<Collider2D>());
+        CheckCollisionWithBody();
     }
 
     void CheckCollisionWithApple(Collider2D headCollider)
@@ -109,47 +116,45 @@ public class SnakeController : MonoBehaviour
         }
     }
 
-    void CheckCollisionWithBarrier(Collider2D headCollider)
+    void HandleAppleCollision(GameObject apple)
     {
+        Destroy(apple);
+        appleManager.SpawnApple();
+        GrowSnake();
+        fruitsEaten++; 
+        UpdateFruitCounter();
+    }
+
+    void GrowSnake()
+    {
+        growSnakeNextMove = true;
+    }
+
+    void CheckCollisionWithBody()
+    {
+        Collider2D headCollider = snakeParts[0].GetComponent<Collider2D>();
         if (headCollider != null)
         {
-            Collider2D[] colliders = Physics2D.OverlapBoxAll(headCollider.bounds.center, headCollider.bounds.size, 0f);
-            foreach (var collider in colliders)
+            for (int i = 2; i < snakeParts.Count; i++)
             {
-                if (collider.gameObject.name.Contains("Barrier"))
+                Collider2D bodyCollider = snakeParts[i].GetComponent<Collider2D>();
+                if (bodyCollider != null && headCollider.bounds.Intersects(bodyCollider.bounds))
                 {
-                    HandleGameOver();
+                    GameOver();
                     break;
                 }
             }
         }
     }
 
-    void HandleAppleCollision(GameObject apple)
+    void GameOver()
     {
-        Destroy(apple);
-        appleManager.SpawnApple();
-        GrowSnake();
+        Time.timeScale = 0; 
+        gameOverText.text = "GAME OVER";
     }
 
-    void HandleGameOver()
+    void UpdateFruitCounter()
     {
-        if (gameOverText != null)
-        {
-            Text gameOverTextField = gameOverText.GetComponentInChildren<Text>();
-            if (gameOverTextField != null)
-            {
-                gameOverTextField.text = "GAME OVER";
-            }
-
-            gameOverText.SetActive(true);
-        }
-
-        Time.timeScale = 0;
-    }
-
-    void GrowSnake()
-    {
-        growSnakeNextMove = true;
+        fruitCounterText.text = "Fruits Eaten: " + fruitsEaten;
     }
 }
